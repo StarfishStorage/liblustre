@@ -1,0 +1,40 @@
+http://lists.onebuilding.org/pipermail/lustre-discuss-lustre.org/2017-June/014576.html
+
+Dilger, Andreas andreas.dilger at intel.com
+Tue Jun 20 15:34:57 PDT 2017
+Previous message: [lustre-discuss] missing lustre version in /proc/fs/lustre/version
+Next message: [lustre-discuss] missing lustre version in /proc/fs/lustre/version
+Messages sorted by: [ date ] [ thread ] [ subject ] [ author ]
+On Jun 20, 2017, at 15:36, Riccardo Veraldi <Riccardo.Veraldi at cnaf.infn.it> wrote:
+> 
+> Hello,
+> 
+> I built lustre-client 2.9.59 from source as dkms package.
+> Everything work fine but /proc/fs/lustre/version  disappeared while it
+> was there with Lustre client 2.9.0
+> is this normal ?
+
+We've had to move a lot of Lustre parameters out of /proc/fs/lustre and into /sys/fs/lustre
+for most parameter values, or /sys/kernel/debug/lustre (via debugfs) for large statistics
+due to rules imposed by the upstream kernel developers.  This change has already been done
+for the Lustre upstream client over a year ago.
+
+If you use, for example, "lctl get_param version" to access this parameter and others then
+the change is handled transparently.  If you are using direct access to /proc then you will
+need to special-case this by version, or use a wildcard path like:
+
+     /{proc,sys}/{fs,sys,kernel/debug}/{lustre,lnet}/
+or
+     {/sys/{fs,kernel/debug}/{lnet,lustre}/,/proc/{fs,sys}/{lnet,lustre}/}
+
+Not all combinations of the above path are actually valid for all parameters, but this is a
+catch-all combination that will find the various parameters.  The actual valid paths are
+/proc/sys/lustre, /proc/fs/lustre, /sys/fs/lustre, /sys/kernel/debug/lustre, and similar for
+lnet parameters.
+
+Cheers, Andreas
+--
+Andreas Dilger
+Lustre Principal Architect
+Intel Corporation
+

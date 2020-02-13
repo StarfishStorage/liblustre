@@ -66,6 +66,10 @@ static int get_client_version(struct lus_fs_handle *lfsh)
 	unsigned int build;
 
 	fp = fopen("/proc/fs/lustre/version", "r");
+/*
+Possible paths:
+'/proc/sys/lustre', '/proc/fs/lustre', '/sys/fs/lustre', '/sys/kernel/debug/lustre', '/proc/sys/lnet', '/proc/fs/lnet', '/sys/fs/lnet', '/sys/kernel/debug/lnet'
+*/
 	if (fp == NULL) {
 		rc = -ENOENT;
 		goto out;
@@ -121,16 +125,9 @@ int lus_open_fs(const char *mount_path, struct lus_fs_handle **lfsh)
 		goto fail;
 	}
 
-	rc = get_client_version(mylfsh);
-	if (rc)
-		goto fail;
 
-	/* Refuse to run on old versions of Lustre. Must be at least
-	 * 2.5. */
-	if (mylfsh->client_version < 20500) {
-		rc = -EINVAL;
-		goto fail;
-	}
+    /* just fill in struct with a reasonable value. Not used */
+	mylfsh->client_version = 2 * 10000 + 7 * 100 + 0;
 
 	mylfsh->mount_fd = -1;
 	mylfsh->fid_fd = -1;
