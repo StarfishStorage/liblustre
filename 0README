@@ -2,3 +2,7 @@ liblustre.so.0 is in /opt/starfish/lib3/sf-lustre/_sflustre_event_mon/liblustre.
 
 clone from https://github.com/fzago-cray/liblustre
 
+=======
+./configure --prefix=/usr/local
+make
+make install
