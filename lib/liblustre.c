@@ -122,6 +122,7 @@ int lus_open_fs(const char *mount_path, struct lus_fs_handle **lfsh)
 	mylfsh = calloc(1, sizeof(*mylfsh));
 	if (mylfsh == NULL) {
 		rc = -errno;
+		fprintf(stderr,"Failed to calloc the FS handle\n");
 		goto fail;
 	}
 
@@ -135,6 +136,7 @@ int lus_open_fs(const char *mount_path, struct lus_fs_handle **lfsh)
 	mylfsh->mount_path = strdup(mount_path);
 	if (mylfsh->mount_path == NULL) {
 		rc = -errno;
+		fprintf(stderr,"The filesystem path is NULL\n");
 		goto fail;
 	}
 
@@ -150,6 +152,7 @@ int lus_open_fs(const char *mount_path, struct lus_fs_handle **lfsh)
 	f = setmntent(_PATH_MOUNTED, "r");
 	if (f == NULL) {
 		rc = -EINVAL;
+		fprintf(stderr,"The filesystem path is not in /etc/mtab\n");
 		goto fail;
 	}
 
@@ -180,6 +183,7 @@ int lus_open_fs(const char *mount_path, struct lus_fs_handle **lfsh)
 
 	if (mylfsh->fs_name[0] == '\0') {
 		rc = -ENOENT;
+		fprintf(stderr,"The Lustre filesystem name is empty\n");
 		goto fail;
 	}
 
@@ -187,6 +191,7 @@ int lus_open_fs(const char *mount_path, struct lus_fs_handle **lfsh)
 	mylfsh->mount_fd = open(mylfsh->mount_path, O_RDONLY | O_DIRECTORY);
 	if (mylfsh->mount_fd == -1) {
 		rc = -errno;
+		fprintf(stderr,"Can't open the Lustre mount point %s\n",mylfsh->mount_path);
 		goto fail;
 	}
 
@@ -194,10 +199,12 @@ int lus_open_fs(const char *mount_path, struct lus_fs_handle **lfsh)
 	rc = fstatfs(mylfsh->mount_fd, &stfsbuf);
 	if (rc == -1) {
 		rc = -errno;
+		fprintf(stderr,"Can't stat the Lustre mount point %s\n",mylfsh->mount_path);
 		goto fail;
 	}
 	if (stfsbuf.f_type != 0xbd00bd0) {
 		rc = -EINVAL;
+		fprintf(stderr,"The mount point is not a Lustre filesystem\n");
 		goto fail;
 	}
 
@@ -206,6 +213,7 @@ int lus_open_fs(const char *mount_path, struct lus_fs_handle **lfsh)
 				O_RDONLY | O_DIRECTORY);
 	if (mylfsh->fid_fd == -1) {
 		rc = -errno;
+		fprintf(stderr,"Can't open the Lustre FID directory '.lustre/fid'\n");
 		goto fail;
 	}
 
