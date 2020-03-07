@@ -11,5 +11,10 @@ make install
 ======
 make clean distclean; clean.sh
 
-liblustre.so now include lus_version() - use version_test.c to make sure
+liblustre.so now includes lus_version() - use version_test.c to make sure
 env uses right liblustre.so
+
+in liblustre/
+gcc -o vt tests/test_version.c -L lib/.libs -llustre
+LD_LIBRARY_PATH=lib/.libs vt
+>>>    Liblustre version 0.2.2

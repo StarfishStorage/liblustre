@@ -65,6 +65,7 @@ liblustre_unittest_la_SOURCES = \
 	test_osts.c \
 	test_params.c \
 	test_support.c \
+	test_version.c \
 	check_extra.h \
 	lib_test.h \
 	$(top_srcdir)/lib/liblustre.c \
