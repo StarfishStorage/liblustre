@@ -39,6 +39,8 @@ typedef struct lu_fid {
  * Misc definitions
  */
 
+#define LIBLUSTRE_VERSION "0.2.2"
+
 #define LOV_MIN_STRIPE_BITS 16
 #define LOV_MIN_STRIPE_SIZE (1 << LOV_MIN_STRIPE_BITS)
 #define LOV_MAX_STRIPE_COUNT 2000
@@ -117,6 +119,7 @@ enum lus_log_level {
 	LUS_LOG_DEBUG
 };
 
+void lus_version(void);
 void lus_log_set_level(enum lus_log_level level);
 enum lus_log_level lus_log_get_level(void);
 typedef void (*lus_log_callback_t)(enum lus_log_level level, int err,

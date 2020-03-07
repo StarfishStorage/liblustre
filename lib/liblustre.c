@@ -38,6 +38,16 @@
  *
  * \param lfsh	An opaque handle returned by lus_open_fs()
  */
+void lus_version(void)
+{
+		fprintf(stderr,"Liblustre version %s\n",LIBLUSTRE_VERSION);
+}
+
+/**
+ * Closes a Lustre filesystem opened with lus_open_fs()
+ *
+ * \param lfsh	An opaque handle returned by lus_open_fs()
+ */
 void lus_close_fs(struct lus_fs_handle *lfsh)
 {
 	if (lfsh == NULL)
@@ -51,53 +61,6 @@ void lus_close_fs(struct lus_fs_handle *lfsh)
 	if (lfsh->fid_fd != -1)
 		close(lfsh->fid_fd);
 	free(lfsh);
-}
-
-/* Retrieve the Lustre client version from /proc/fs/lustre/version,
- * and store the result in the handle. */
-static int get_client_version(struct lus_fs_handle *lfsh)
-{
-	FILE *fp = NULL;
-	char *line = NULL;
-	int rc;
-	size_t line_len;
-	unsigned int major;
-	unsigned int minor;
-	unsigned int build;
-
-	fp = fopen("/proc/fs/lustre/version", "r");
-/*
-Possible paths:
-'/proc/sys/lustre', '/proc/fs/lustre', '/sys/fs/lustre', '/sys/kernel/debug/lustre', '/proc/sys/lnet', '/proc/fs/lnet', '/sys/fs/lnet', '/sys/kernel/debug/lnet'
-*/
-	if (fp == NULL) {
-		rc = -ENOENT;
-		goto out;
-	}
-
-	line_len = getline(&line, &line_len, fp);
-	if (line_len == -1) {
-		rc = -EINVAL;
-		goto out;
-	}
-
-	rc = sscanf(line, "lustre: %u.%u.%u", &major, &minor, &build);
-	if (rc != 3) {
-		rc = -EINVAL;
-		goto out;
-	}
-
-	lfsh->client_version = major * 10000 + minor * 100 + build;
-
-	rc = 0;
-
-out:
-	free(line);
-
-	if (fp != NULL)
-		fclose(fp);
-
-	return rc;
 }
 
 /**

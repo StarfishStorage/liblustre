@@ -3,6 +3,13 @@ liblustre.so.0 is in /opt/starfish/lib3/sf-lustre/_sflustre_event_mon/liblustre.
 clone from https://github.com/fzago-cray/liblustre
 
 =======
+autoreconf -i
 ./configure --prefix=/usr/local
 make
 make install
+
+======
+make clean distclean; clean.sh
+
+liblustre.so now include lus_version() - use version_test.c to make sure
+env uses right liblustre.so

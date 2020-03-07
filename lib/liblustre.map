@@ -65,6 +65,7 @@
 		lus_path2parent;
 		lus_set_lov_layout;
 		lus_stat_by_fid;
+		lus_version;
 
 		# Export the unittest_* functions present in the version
 		# compiled with the unit tests. None of these symbols are
