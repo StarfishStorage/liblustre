@@ -1,5 +1,8 @@
 #!/bin/bash
 # don't forget to exclude clean.sh from list
+
+make clean distclean
+
 declare -a FLIST
 FLIST[0]="Makefile Makefile.in aclocal.m4 autom4te.cache/ config.guess config.sub configure"
 FLIST[1]="depcomp include/Makefile include/Makefile.in include/config.h include/config.h.in include/stamp-h1 install-sh lib/.deps/"
