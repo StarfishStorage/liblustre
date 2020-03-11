@@ -39,7 +39,7 @@ typedef struct lu_fid {
  * Misc definitions
  */
 
-#define LIBLUSTRE_VERSION "0.2.2"
+#define LIBLUSTRE_VERSION "0.2.3"
 
 #define LOV_MIN_STRIPE_BITS 16
 #define LOV_MIN_STRIPE_SIZE (1 << LOV_MIN_STRIPE_BITS)

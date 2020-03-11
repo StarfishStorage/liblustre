@@ -106,10 +106,16 @@ int lus_open_fs(const char *mount_path, struct lus_fs_handle **lfsh)
 	/* Remove extra slashes at the end of the mountpoint.
 	 * /mnt/lustre/ --> /mnt/lustre */
 	p = &mylfsh->mount_path[strlen(mylfsh->mount_path)-1];
+#ifdef OPEN_FS_DEBUG
+    fprintf(stderr,"Starting Mount paths: %s -> %s\n",mount_path,mylfsh->mount_path);
+#endif
 	while (p != mylfsh->mount_path && *p == '/') {
 		*p = '\0';
 		p--;
 	}
+#ifdef OPEN_FS_DEBUG
+    fprintf(stderr,"Ending Mount paths: Unchanged: %s -> Changed? %s",mount_path,mylfsh->mount_path);
+#endif
 
 	/* Retrieve the lustre filesystem name from /etc/mtab. */
 	f = setmntent(_PATH_MOUNTED, "r");
@@ -120,8 +126,11 @@ int lus_open_fs(const char *mount_path, struct lus_fs_handle **lfsh)
 	}
 
 	while ((ent = getmntent(f))) {
-		size_t len;
+#ifdef OPEN_FS_DEBUG
+    fprintf(stderr,"getmntent: %s type: %s dir %s\n",ent->mnt_fsname,ent->mnt_type,ent->mnt_dir);
+#endif
 
+        /* will this match for all versions of ent->mnt_dir? is it a std form? Is mylfsh->mount_path a standard form?*/
 		if ((strcmp(ent->mnt_dir, mylfsh->mount_path) != 0) ||
 		    (strcmp(ent->mnt_type, "lustre") != 0))
 			continue;
@@ -135,18 +144,21 @@ int lus_open_fs(const char *mount_path, struct lus_fs_handle **lfsh)
 		/* Skip :/ */
 		p += 2;
 
-		len = strlen(p);
-		if (len >= 1 && len <= 8)
-			strcpy(mylfsh->fs_name, p);
+        /* copy up to the first 8 characters from /etc/mtab to the Lustre handle fs_name field */
+		strncpy(mylfsh->fs_name, p,8);
+        mylfsh->fs_name[8] = '\0';
 
 		break;
 	}
+#ifdef OPEN_FS_DEBUG
+    fprintf(stderr,"getmntent: %s extracted: %s \n",p,mylfsh->fs_name);
+#endif
 
 	endmntent(f);
 
 	if (mylfsh->fs_name[0] == '\0') {
 		rc = -ENOENT;
-		fprintf(stderr,"The Lustre filesystem name is empty\n");
+		fprintf(stderr,"The Lustre filesystem name is empty rc=%d\n",rc);
 		goto fail;
 	}
 
@@ -154,7 +166,7 @@ int lus_open_fs(const char *mount_path, struct lus_fs_handle **lfsh)
 	mylfsh->mount_fd = open(mylfsh->mount_path, O_RDONLY | O_DIRECTORY);
 	if (mylfsh->mount_fd == -1) {
 		rc = -errno;
-		fprintf(stderr,"Can't open the Lustre mount point %s\n",mylfsh->mount_path);
+		fprintf(stderr,"Can't open the Lustre mount point %s\n rc=%d",mylfsh->mount_path,rc);
 		goto fail;
 	}
 
@@ -162,12 +174,12 @@ int lus_open_fs(const char *mount_path, struct lus_fs_handle **lfsh)
 	rc = fstatfs(mylfsh->mount_fd, &stfsbuf);
 	if (rc == -1) {
 		rc = -errno;
-		fprintf(stderr,"Can't stat the Lustre mount point %s\n",mylfsh->mount_path);
+		fprintf(stderr,"Can't stat the Lustre mount point %s rc=%d\n",mylfsh->mount_path,rc);
 		goto fail;
 	}
 	if (stfsbuf.f_type != 0xbd00bd0) {
 		rc = -EINVAL;
-		fprintf(stderr,"The mount point is not a Lustre filesystem\n");
+		fprintf(stderr,"The mount point is not a Lustre filesystem rc=%d\n",rc);
 		goto fail;
 	}
 
@@ -176,7 +188,7 @@ int lus_open_fs(const char *mount_path, struct lus_fs_handle **lfsh)
 				O_RDONLY | O_DIRECTORY);
 	if (mylfsh->fid_fd == -1) {
 		rc = -errno;
-		fprintf(stderr,"Can't open the Lustre FID directory '.lustre/fid'\n");
+		fprintf(stderr,"Can't open the Lustre FID directory '.lustre/fid rc=%d'\n",rc);
 		goto fail;
 	}
 
