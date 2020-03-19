@@ -18,3 +18,16 @@ in liblustre/
 gcc -o vt tests/test_version.c -L lib/.libs -llustre
 LD_LIBRARY_PATH=lib/.libs vt
 >>>    Liblustre version 0.2.2
+
+
+
+===============
+liblustre.la and liblustre.so* files should be put in /usr/lib and ldd liblustre.abi3.so to ensure liblustre.so is found
+have seen them in /usr/local/lib and /lib64 as well, but important that liblustre.abi3.so can find them
+
+export LD_LIBRARY_PATH=/opt/starfish/python3.7-shared/lib:/usr/local/sf-event_monitors/sf-lustre/bin:/usr/local/lib64:/usr/local/lib
+
+example cmd usage:
+
+LD_LIBRARY_PATH=/opt/starfish/python3.7-shared/lib:/usr/local/sf-event_monitors/sf-lustre/bin:/usr/local/lib64:/usr/local/lib python3 -Xutf8 liblustreTest.py --fs /lustre --fids 0x2000007ba:0x1d18b:0x0 0x200000402:0x1698b:0x0
+
