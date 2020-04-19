@@ -119,6 +119,10 @@ enum lus_log_level {
 	LUS_LOG_DEBUG
 };
 
+/* after migration (using LIBLUSTRE_VERSION), rename liblustre_version() -> lus_version()
+ * in keeping with liblustre naming convention (start fns with lus_)
+ */
+char *liblustre_version(char *buffer);
 void lus_version(void);
 void lus_log_set_level(enum lus_log_level level);
 enum lus_log_level lus_log_get_level(void);

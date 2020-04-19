@@ -34,10 +34,16 @@
 #include "internal.h"
 
 /**
- * Closes a Lustre filesystem opened with lus_open_fs()
- *
- * \param lfsh	An opaque handle returned by lus_open_fs()
+ * this version needs to supply externally malloc'd buffer
+ * of at least 25 bytes - use PATH_MAX (4096) bytes to be safe
+ * LIBLUSTRE_VERSION is in <lustre/lustre.h>
  */
+char preamble[] = "Liblustre version";
+char *liblustre_version(char *buffer)
+{
+    snprintf(buffer,strlen(LIBLUSTRE_VERSION)+strlen(preamble)+4,"%s %s",preamble,LIBLUSTRE_VERSION);
+	return buffer;
+}
 void lus_version(void)
 {
 		fprintf(stderr,"Liblustre version %s\n",LIBLUSTRE_VERSION);
