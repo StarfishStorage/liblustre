@@ -350,7 +350,7 @@ int lus_fid2path(const struct lus_fs_handle *lfsh, const lustre_fid *fid,
 		 char *path, size_t path_len,
 		 long long *recno, unsigned int *linkno)
 {
-	/* Avoid allocating gf by adding MAX_PATH after it. */
+	/* Avoid allocating gf by adding PATH_MAX after it. */
 	struct {
 		struct getinfo_fid2path gf;
 		char filler[PATH_MAX];
