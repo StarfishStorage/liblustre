@@ -32,43 +32,35 @@
 
 #include <lustre/lustre.h>
 
-/* Name of file/directory. Will be set once and will not change. */
-/*
-static char mainpath[PATH_MAX];
- */
-static char *mainpath;
 static const char *mainfile1 = "llapi_fid_test_name_9585766";
 static const char *mainfile2 = "llapi_fid_test_name_1583792225";
-
-static char *lustre_dir;        /* Test directory inside Lustre */
 
 struct lus_fs_handle *lfsh;
 
 /* Helper - call path2fid, fd2fid and fid2path against an existing
  * file/directory */
-static void helper_fid2path(const char *filename, int fd)
+static void helper_fid2path(const char *filepath, int fd)
 {
-    lustre_fid fid;
-    lustre_fid fid2;
-    lustre_fid fid3;
+    lustre_fid fid = {0,0,0};
+    lustre_fid fid2 = {0,0,0};
+    lustre_fid fid3 = {0,0,0};
     char path[PATH_MAX];
     char path3[PATH_MAX];
     long long recno;
     unsigned int linkno;
     int rc;
 
-    rc = lus_path2fid(filename, &fid);
-    printf("        filepath %s -> FID [0x%x:0x%x:0x%x]\n",filename,fid.f_seq,fid.f_oid,fid.f_ver);
+    rc = lus_path2fid(filepath, &fid);
+    printf("path2fid        filepath %p %s -> FID [0x%x:0x%x:0x%x]\n",filepath,filepath,fid.f_seq,fid.f_oid,fid.f_ver);
 
     recno = -1;
     linkno = 0;
     rc = lus_fid2path(lfsh, &fid, path, sizeof(path), &recno, &linkno);
-    printf("reverse: filepath %s -> FID [0x%0x:0x%x:0x%x]\n",path,fid.f_seq,fid.f_oid,fid.f_ver);
+    printf("fid2path: filepath %s -> FID [0x%0x:0x%x:0x%x]\n",path,fid.f_seq,fid.f_oid,fid.f_ver);
 
     /* Try fd2fid and check that the result is still the same. */
     if (fd != -1) {
         rc = lus_fd2fid(fd, &fid3);
-
     }
 
     /* Pass the result back to fid2path and ensure the fid stays
@@ -79,12 +71,14 @@ static void helper_fid2path(const char *filename, int fd)
 }
 
 /* Create a test file*/
-char *mk_path(const char *mainfile,char *mainpath)
+char *mk_path(const char *lustre_dir, const char *mainfile, char *mainpath)
 {
     int rc;
     struct stat st = {0};
-    rc = snprintf(mainpath, sizeof(mainpath), "%s/%s", lustre_dir, mainfile);
-    if (rc < 0 && rc >= sizeof(mainpath)) {
+
+    rc = snprintf(mainpath, PATH_MAX, "%s/%s", lustre_dir, mainfile);
+    printf("mk_path: mainpath %s \n",mainpath);
+    if (rc < 0 && rc >= PATH_MAX) {
         fprintf(stderr, "Error: invalid name for mainpath\n");
         mainpath[0] = '\0';
     }
@@ -92,18 +86,26 @@ char *mk_path(const char *mainfile,char *mainpath)
 }
 int mk_file(const char *filepath) 
 {
-    int fd;
-    fd = creat(filepath, 0);
+    int fd, rc;
+    if (access(filepath, F_OK ) != -1 ) {
+        rc = remove(filepath);
+        if (rc != 0) return -1;
+    }
+    fd = open(filepath, O_WRONLY|O_CREAT|O_TRUNC, 0);
     return fd;
 }
-void argparse(int argc, char *argv[])
+char *argparse(int argc, char *argv[])
 {
     int rc;
     int opt;
+    char *lustre_dir;        /* Test directory inside Lustre */
+
+    lustre_dir = NULL;
     while ((opt = getopt(argc, argv, "d:")) != -1) {
         switch (opt) {
         case 'd':
             lustre_dir = optarg;
+            fprintf(stderr, "lustre dir -> %p %s\n", lustre_dir, lustre_dir);
             break;
         case '?':
         default:
@@ -112,6 +114,7 @@ void argparse(int argc, char *argv[])
             exit(EXIT_FAILURE);
         }
     }
+    return lustre_dir;
 }
 /* Test fid2path with helper */
 int main(int argc, char *argv[])
@@ -119,12 +122,14 @@ int main(int argc, char *argv[])
     int rc;
     int fd;
     char *mainpath;
+    char *lustre_dir;        /* Test directory inside Lustre */
 
-    argparse(argc, argv);
-    mainpath = (char *)calloc(PATH_MAX,1);
+    lustre_dir = argparse(argc, argv);
+    mainpath = (char *)malloc(PATH_MAX+1);
 
     if (lustre_dir == NULL)
         lustre_dir = "/lustre";
+    fprintf(stderr, "Main lustre dir -> %p %s\n", lustre_dir, lustre_dir);
 
     rc = lus_open_fs(lustre_dir, &lfsh);
     if (rc != 0) {
@@ -132,10 +137,10 @@ int main(int argc, char *argv[])
             lustre_dir);
         return EXIT_FAILURE;
     }
-    mainpath = mk_path(mainfile1,mainpath);
+    mainpath = mk_path(lustre_dir, mainfile1, mainpath);
     fd = mk_file(mainpath);
     helper_fid2path(mainpath, fd);
-    mainpath = mk_path(mainfile2,mainpath);
+    mainpath = mk_path(lustre_dir, mainfile2, mainpath);
     fd = mk_file(mainpath);
     helper_fid2path(mainpath, fd);
 
