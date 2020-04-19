@@ -2,3 +2,4 @@ gcc -o tf test_fid.c -I ../include -L ../libs/.libs -llustre
 # gdb debug
 gcc -g -o tf test_fid.c -I ../include -L ../libs/.libs -llustre
 gcc -o  tm test_mtab.c -I ../include -L ../libs/.libs -llustre
+gcc -o  tv test_version.c -I ../include -L ../libs/.libs -llustre
